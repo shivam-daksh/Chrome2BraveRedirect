@@ -1,11 +1,17 @@
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    if (changeInfo.status === 'complete' && tab.url && tab.url.includes("youtube.com")) {
-      // Construct the command to open in Brave
-      const bravePath = `open -a "Brave Browser" "${tab.url}"`;
-  
-      // Use the Chrome API to create a new tab for Brave
-      chrome.tabs.create({ url: tab.url });
-      chrome.tabs.remove(tabId); // Close the original tab
-    }
-  });
+chrome.webRequest.onBeforeRequest.addListener(
+    function(details) {
+      const url = details.url;
+      if (url.includes("youtube.com")) {
+        // Use the 'open' command to launch Brave
+        const command = `open -a "Brave Browser" "${url}"`;
+        const exec = require('child_process').exec;
+        exec(command);
+        
+        // Close the original tab
+        chrome.tabs.remove(details.tabId);
+      }
+    },
+    {urls: ["*://*.youtube.com/*"]},
+    ["blocking"]
+  );
   
